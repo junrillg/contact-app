@@ -3,9 +3,9 @@ import Container from '@material-ui/core/Container';
 import * as ContactService from '../services/contactService';
 import ContactTable from './ContactTable';
 import {
+  handleRemoveContact,
   handleEditContact,
   handleUpdateContact,
-  handleRemoveContact,
 } from '../util/contactUtil';
 
 const ContactHome = () => {

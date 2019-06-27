@@ -1,3 +1,5 @@
+import * as ContactService from '../services/contactService';
+
 // handle deleting contact data
 export const handleRemoveContact = setRows => id => {
   const contactDelete = async () => {
