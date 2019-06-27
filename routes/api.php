@@ -13,4 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::resource('contacts', 'ContactController')->only(['index', 'store', 'update', 'destroy']);
+Route::resource('contacts', 'ContactController')->only([
+  'index',
+  'store',
+  'update',
+  'destroy'
+]);
