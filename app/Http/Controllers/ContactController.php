@@ -19,6 +19,53 @@ class ContactController extends Controller
   }
 
   /**
+   * Saving contact information to database
+   *
+   * @param $requestBody - request body
+   * @param $id - contact id
+   * @return $contact
+   */
+  private function saveContact($requestBody, $id)
+  {
+    // create new contact or update existing contact
+    $contact = isset($id) ? Contact::find($id) : new Contact();
+    $contact->first_name = isset($id)
+      ? $requestBody['firstName'] || $contact->first_name
+      : $requestBody['firstName'];
+    $contact->last_name = isset($id)
+      ? $requestBody['lastName'] || $contact->last_name
+      : $requestBody['lastName'];
+    // save contact data
+    $contact->save();
+    return $contact;
+  }
+
+  /**
+   * Saving phone number information to database
+   *
+   * @param $requestBody - request body
+   * @param $contact - contact data
+   */
+  private function savePhoneNumbers($requestBody, $contact)
+  {
+    // loop around phone numbers
+    foreach ($requestBody['phoneNumbers'] as $data) {
+      if (isset($data['id'])) {
+        // will update existing number
+        $phoneNumber = PhoneNumber::find($data['id']);
+        $phoneNumber->number = $data['number'];
+        $phoneNumber->save();
+      } else {
+        // if number is not existing then save as new number
+        $number = $data['number'];
+        $phoneNumber = new PhoneNumber(compact('number'));
+        $phoneNumber->save();
+        $contact->phoneNumbers()->attach($phoneNumber);
+      }
+    }
+  }
+
+  /**
    * Return all contacts via json
    *
    * @return Response
@@ -43,42 +90,9 @@ class ContactController extends Controller
     // get all the response body data
     $requestBody = $request->json()->all();
 
-    // check if firstName and lastName property are set
-    $validFirstName =
-      isset($requestBody['firstName']) || empty($requestBody['firstName']);
-    $validLastName =
-      isset($requestBody['lastName']) || empty($requestBody['lastName']);
-    $isValidContactData = $validFirstName && $validLastName;
+    $contact = $this->saveContact($requestBody, null);
+    $this->savePhoneNumbers($requestBody, $contact);
 
-    // validate if response body data is valid and create new Contact data
-    if (!$isValidContactData) {
-      return $this->response->errorWrongArgs(
-        'firstName and lastName are required!'
-      );
-    } else {
-      // create new contact
-      $contact = new Contact([
-        'first_name' => $requestBody['firstName'],
-        'last_name' => $requestBody['lastName']
-      ]);
-      // save contact data
-      $contact->save();
-    }
-
-    // check if phoneNumbers is being passed on request body
-    $isValidPhoneNumbersData = isset($requestBody['phoneNumbers']);
-
-    // will execute saving of phone number if present in response data
-    if ($isValidPhoneNumbersData) {
-      // loop around phone numbers and attach to pivotal table
-      foreach ($requestBody['phoneNumbers'] as $number) {
-        $phoneNumber = new PhoneNumber(compact('number'));
-        $phoneNumber->save();
-        $contact->phoneNumbers()->attach($phoneNumber);
-      }
-      // rerturn an item of contacts
-      return $this->response->withItem($contact, new ContactTransformer());
-    }
     // rerturn an item of contacts
     return $this->response->withItem($contact, new ContactTransformer());
   }
@@ -102,45 +116,8 @@ class ContactController extends Controller
     if (!$contact) {
       return $this->response->errorNotFound("Contact doesn't exist!");
     } else {
-      // request data
-      $firstNameData = $requestBody['firstName'];
-      $lastNameData = $requestBody['lastName'];
-
-      // will map data if they are present in request and will get the existing data if not
-      $firstName = isset($firstNameData)
-        ? $firstNameData
-        : $contact->first_name;
-      $lastName = isset($lastNameData) ? $lastNameData : $contact->last_name;
-
-      // will update data depending on the value
-      $contact->first_name = $firstName;
-      $contact->last_name = $lastName;
-
-      // save contact data
-      $contact->save();
-
-      // check if phoneNumbers is being passed on request body
-      $isValidPhoneNumbersData = isset($requestBody['phoneNumbers']);
-      // will execute saving of phone number if present in response data
-      if ($isValidPhoneNumbersData) {
-        // loop around phone numbers
-        foreach ($requestBody['phoneNumbers'] as $data) {
-          if (isset($data['id'])) {
-            // will update existing number
-            $phoneNumber = PhoneNumber::find($data['id']);
-            $phoneNumber->number = $data['number'];
-            $phoneNumber->save();
-          } else {
-            // if number is not existing then save as new number
-            $number = $data['number'];
-            $phoneNumber = new PhoneNumber(compact('number'));
-            $phoneNumber->save();
-            $contact->phoneNumbers()->attach($phoneNumber);
-          }
-        }
-        // rerturn an item of contacts
-        return $this->response->withItem($contact, new ContactTransformer());
-      }
+      $contact = $this->saveContact($requestBody, $id);
+      $this->savePhoneNumbers($requestBody, $contact);
     }
     return $this->response->withItem($contact, new ContactTransformer());
   }

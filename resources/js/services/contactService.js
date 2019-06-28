@@ -1,5 +1,4 @@
 import request from '../lib/request';
-import contactBuilderForApi from '../mapper/contactBuilderForApi';
 import { CONTACTS_API_PATH } from '../constants/apiPaths';
 
 // retrieve contacts data
@@ -7,8 +6,7 @@ export const getContacts = () =>
   request.get(CONTACTS_API_PATH).then(({ data }) => data);
 
 // create new contact data
-export const createContact = data =>
-  request.post(CONTACTS_API_PATH, contactBuilderForApi(data));
+export const createContact = data => request.post(CONTACTS_API_PATH, data);
 
 // update existing contact data
 export const updateContact = (data, id) =>
