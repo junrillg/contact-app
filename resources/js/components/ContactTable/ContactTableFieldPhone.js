@@ -6,6 +6,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TextField from '@material-ui/core/TextField';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import Button from '@material-ui/core/Button';
 import PhoneIcon from '@material-ui/icons/Phone';
 import Fab from '@material-ui/core/Fab';
 
@@ -19,6 +20,9 @@ const useStyles = makeStyles(() => ({
   textField: {
     marginLeft: 10,
   },
+  listItem: {
+    justifyContent: 'center',
+  },
 }));
 
 const ContactTableFieldPhone = ({ row, contact, setContact }) => {
@@ -29,12 +33,12 @@ const ContactTableFieldPhone = ({ row, contact, setContact }) => {
         <TableCell align="center">
           <List component="nav">
             {contact.phoneNumbers.map((value, index) => (
-              <ListItem key={index}>
+              <ListItem key={index} className={classes.listItem}>
                 <Fab size="small" color="primary">
                   <PhoneIcon />
                 </Fab>
                 <TextField
-                  id="standard-bare"
+                  type="number"
                   className={classes.textField}
                   value={value.number}
                   onChange={e =>
@@ -42,9 +46,12 @@ const ContactTableFieldPhone = ({ row, contact, setContact }) => {
                       ...contact,
                       phoneNumbers: contact.phoneNumbers.map(
                         (value, phoneNumberIndex) => {
-                          if (index === phoneNumberIndex) e.target.value;
-                          console.log(value);
-                          return value.number;
+                          if (index === phoneNumberIndex)
+                            return {
+                              ...value,
+                              number: parseInt(e.target.value, 10),
+                            };
+                          return value;
                         }
                       ),
                     })
@@ -55,6 +62,18 @@ const ContactTableFieldPhone = ({ row, contact, setContact }) => {
               </ListItem>
             ))}
           </List>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() =>
+              setContact({
+                ...contact,
+                phoneNumbers: [...contact.phoneNumbers, { number: 0 }],
+              })
+            }
+          >
+            Add
+          </Button>
         </TableCell>
       )}
       {!row.isOnEdit && (

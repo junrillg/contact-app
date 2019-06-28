@@ -118,6 +118,29 @@ class ContactController extends Controller
 
       // save contact data
       $contact->save();
+
+      // check if phoneNumbers is being passed on request body
+      $isValidPhoneNumbersData = isset($requestBody['phoneNumbers']);
+      // will execute saving of phone number if present in response data
+      if ($isValidPhoneNumbersData) {
+        // loop around phone numbers
+        foreach ($requestBody['phoneNumbers'] as $data) {
+          if (isset($data['id'])) {
+            // will update existing number
+            $phoneNumber = PhoneNumber::find($data['id']);
+            $phoneNumber->number = $data['number'];
+            $phoneNumber->save();
+          } else {
+            // if number is not existing then save as new number
+            $number = $data['number'];
+            $phoneNumber = new PhoneNumber(compact('number'));
+            $phoneNumber->save();
+            $contact->phoneNumbers()->attach($phoneNumber);
+          }
+        }
+        // rerturn an item of contacts
+        return $this->response->withItem($contact, new ContactTransformer());
+      }
     }
     return $this->response->withItem($contact, new ContactTransformer());
   }

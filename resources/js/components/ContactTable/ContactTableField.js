@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
   textField: {
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
-    width: 200,
+    width: 120,
   },
 }));
 
@@ -21,7 +21,6 @@ const ContactTableField = ({ row, contact, setContact, field }) => {
       {row.isOnEdit && (
         <TableCell align="center">
           <TextField
-            id="standard-bare"
             className={classes.textField}
             value={contact[field]}
             onChange={e => setContact({ ...contact, [field]: e.target.value })}
