@@ -44,8 +44,11 @@ class ContactController extends Controller
     $requestBody = $request->json()->all();
 
     // check if firstName and lastName property are set
-    $isValidContactData =
-      isset($requestBody['firstName']) && isset($requestBody['lastName']);
+    $validFirstName =
+      isset($requestBody['firstName']) || empty($requestBody['firstName']);
+    $validLastName =
+      isset($requestBody['lastName']) || empty($requestBody['lastName']);
+    $isValidContactData = $validFirstName && $validLastName;
 
     // validate if response body data is valid and create new Contact data
     if (!$isValidContactData) {
@@ -58,7 +61,6 @@ class ContactController extends Controller
         'first_name' => $requestBody['firstName'],
         'last_name' => $requestBody['lastName']
       ]);
-
       // save contact data
       $contact->save();
     }

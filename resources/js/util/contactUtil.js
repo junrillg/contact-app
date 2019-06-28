@@ -1,6 +1,8 @@
 import * as ContactService from '../services/contactService';
 
-// handle deleting contact data
+/**
+ * handle deleting contact data
+ */
 export const handleRemoveContact = setRows => id => {
   const contactDelete = async () => {
     try {
@@ -12,7 +14,9 @@ export const handleRemoveContact = setRows => id => {
   contactDelete();
 };
 
-// handle displaying the edit field for contact
+/**
+ * handle displaying the edit field for contact
+ */
 export const handleEditContact = setRows => (rows, id) => {
   const updatedRows = rows.map(value => ({
     ...value,
@@ -21,14 +25,27 @@ export const handleEditContact = setRows => (rows, id) => {
   setRows(updatedRows);
 };
 
-// handle updating contact data
-export const handleUpdateContact = setRows => (data, id) => {
+/**
+ * handle updating contact data
+ */
+export const handleUpdateContact = setRows => ({ data, id, isClose }) => {
   const contactUpdate = async () => {
     try {
-      await ContactService.updateContact(data, id);
+      if (id && !isClose) await ContactService.updateContact(data, id);
+      if (!id && !isClose) await ContactService.createContact(data);
       const response = await ContactService.getContacts();
       setRows(response.data);
     } catch (e) {}
   };
   contactUpdate();
+};
+
+/**
+ * handle updating contact data
+ */
+export const handleCreateContact = setRows => rows => {
+  setRows([
+    ...rows,
+    { firstName: '', lastName: '', phoneNumbers: [], isOnEdit: true },
+  ]);
 };
